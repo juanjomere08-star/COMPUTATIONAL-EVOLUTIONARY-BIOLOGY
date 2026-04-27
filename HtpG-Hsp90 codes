@@ -71,3 +71,60 @@ plt.ylabel("Puntuación de Hidrofobicidad")
 plt.legend()
 plt.savefig("perfil_hidrofobicidad.png")
 plt.show()
+
+
+# EVOLUTIONARY RATE GRAPH #
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Load your master rate file
+# Make sure the filename matches what you have in your folder
+archivo_rate = 'alineamiento_final.fasta.rate'
+
+try:
+    # Read the file - IQ-TREE rates files use whitespace as a separator
+    df = pd.read_csv(archivo_rate, sep=r'\s+', comment='#')
+    
+    # 2. Set the aesthetic style
+    plt.style.use('seaborn-v0_8-white')
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # 3. Calculate a rolling mean (window of 10) to smooth the line for the video/poster
+    # This makes the "Conservation Profile" easier to read
+    linea_suave = df['Rate'].rolling(window=10, center=True).mean()
+    
+    # 4. Plot the data
+    # Main line (Dark Navy)
+    ax.plot(df['Site'], linea_suave, color='#2c3e50', linewidth=2.5, label='Conservation Profile')
+    
+    # Elegant Shading under the curve
+    ax.fill_between(df['Site'], linea_suave, color='#34495e', alpha=0.1)
+
+    # 5. Titles and Axis Labels (English for your thesis/poster)
+    ax.set_title('Evolutionary Rate Analysis: Hsp90/HtpG Divergence', fontsize=16, fontweight='bold', pad=20)
+    ax.set_xlabel('Amino Acid Position (Aligned)', fontsize=13, labelpad=10)
+    ax.set_ylabel('Substitution Rate (dN/dS Proxy)', fontsize=13, labelpad=10)
+    
+    # 6. Highlight the Linker Region (Magenta Zone)
+    # Adjust 210 and 280 if your specific alignment shifted the linker position
+    ax.axvspan(210, 280, color='magenta', alpha=0.15, label='Flexible Linker Zone')
+    
+    # Add the text label inside the graph
+    ax.text(245, ax.get_ylim()[1]*0.9, 'Linker Divergence', 
+            color='darkmagenta', ha='center', fontweight='bold', fontsize=10)
+
+    # 7. Final Polishing
+    ax.grid(axis='y', linestyle='--', alpha=0.4)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    plt.legend(loc='upper right', frameon=True)
+    plt.tight_layout()
+    
+    # Save the figure for your poster
+    plt.savefig('Evolutionary_Rates_Final.png', dpi=300)
+    print("Graph generated successfully: Evolutionary_Rates_Final.png")
+    plt.show()
+
+except Exception as e:
+    print(f"Error: {e}. Check if '{archivo_rate}' is in the correct folder.")
